@@ -1,41 +1,31 @@
-// import logo from './logo.svg';
+import P from 'prop-types'; // Lib usada para validar props no React (Alternativa do TypeScript)
 import './App.css';
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
+
+// Componente que é salvo na "memoria" do React. É renderizado quando o React dececta alteração e depois é salvo novamente
+const Button = memo(function button({ incrementBtn }) {
+  console.log('Filho, renderizou');
+  return <button onClick={() => incrementBtn(100)}>Increment</button>;
+});
+
+Button.propTypes = {
+  incrementBtn: P.func,
+};
 
 function App() {
   const [counter, setCounter] = useState(0);
-  const [counter2, setCounter2] = useState(0);
 
-  //ComponentDidUpdate = Executado toda vez que meu componente é atualizado
-  useEffect(() => {
-    console.log('ComponentDidUpdate');
-  });
+  console.log('Pai, renderizou');
 
-  //ComponentDidMount (Sem dependencias) = Executa apenas 1 vez quando o componente é montado
-  useEffect(() => {
-    console.log('ComponentDidMount');
-    document.querySelector('h1').addEventListener('click', () => console.log('H1 foi clicado'));
-
-    //ComponentWillUnmount = Quando o componente é desmontado
-    return () => {
-      document.querySelector('h1').removeEventListener('click', () => console.log('H1 foi clicado'));
-    };
+  //Função que é salva na "memoria" do componente, fazendo que não precise reescrever a função toda vez que é redenrizada novamente
+  const handleClick = useCallback((num) => {
+    setCounter((counter) => counter + num);
   }, []);
-
-  //ComponentDidMount (Com Dependencias) = Executa cada vez que minha dependencia é a atualizada
-  useEffect(() => {
-    console.log('C:', counter, 'C2:', counter2);
-  }, [counter, counter2]);
-
-  const handleClick = () => setCounter(counter + 1);
-  const handleClick2 = () => setCounter2(counter2 + 1);
 
   return (
     <div className="App">
-      <h1>Contador: {counter}</h1>
-      <h1>Contador 2: {counter2}</h1>
-      <button onClick={handleClick}>1 Increment</button>
-      <button onClick={handleClick2}>2 Increment</button>
+      <h1>C1: {counter}</h1>
+      <Button incrementBtn={handleClick} />
     </div>
   );
 }
