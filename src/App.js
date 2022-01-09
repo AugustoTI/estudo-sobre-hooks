@@ -1,31 +1,46 @@
-import P from 'prop-types'; // Lib usada para validar props no React (Alternativa do TypeScript)
+import P from 'prop-types';
+import { useMemo, useEffect, useState } from 'react';
 import './App.css';
-import { memo, useState, useEffect, useCallback } from 'react';
 
-// Componente que é salvo na "memoria" do React. É renderizado quando o React dececta alteração e depois é salvo novamente
-const Button = memo(function button({ incrementBtn }) {
+const Posts = ({ post }) => {
   console.log('Filho, renderizou');
-  return <button onClick={() => incrementBtn(100)}>Increment</button>;
-});
+  return (
+    <div className="post">
+      <h1>{post.title}</h1>
+      <p>{post.body}</p>
+    </div>
+  );
+};
 
-Button.propTypes = {
-  incrementBtn: P.func,
+Posts.propTypes = {
+  post: P.shape({
+    title: P.string,
+    body: P.string,
+  }),
 };
 
 function App() {
-  const [counter, setCounter] = useState(0);
+  const [posts, setPosts] = useState([]);
+  const [input, setInput] = useState('');
+  console.log('Pai renderizou');
 
-  console.log('Pai, renderizou');
-
-  //Função que é salva na "memoria" do componente, fazendo que não precise reescrever a função toda vez que é redenrizada novamente
-  const handleClick = useCallback((num) => {
-    setCounter((counter) => counter + num);
+  useEffect(() => {
+    setTimeout(() => {
+      fetch('https://jsonplaceholder.typicode.com/posts')
+        .then((res) => res.json())
+        .then((json) => setPosts(json))
+        .catch((err) => console.log(err));
+    }, 5000);
   }, []);
 
   return (
     <div className="App">
-      <h1>C1: {counter}</h1>
-      <Button incrementBtn={handleClick} />
+      <input type="search" value={input} onChange={(e) => setInput(e.target.value)} />
+      {posts.length === 0 && <p>Carregando seus posts...</p>}
+
+      {useMemo(() => {
+        return posts.length > 0 && posts.map((post) => <Posts post={post} key={post.id} />);
+      }, [posts])}
     </div>
   );
 }
