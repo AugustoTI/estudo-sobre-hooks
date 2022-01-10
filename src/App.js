@@ -1,12 +1,12 @@
 import P from 'prop-types';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import './App.css';
 
-const Posts = ({ post }) => {
+const Posts = ({ post, action }) => {
   console.log('Filho, renderizou');
   return (
     <div className="post">
-      <h1>{post.title}</h1>
+      <h1 onClick={() => action(post.title)}>{post.title}</h1>
       <p>{post.body}</p>
     </div>
   );
@@ -17,29 +17,39 @@ Posts.propTypes = {
     title: P.string,
     body: P.string,
   }),
+  action: P.func,
 };
 
 function App() {
   const [posts, setPosts] = useState([]);
   const [input, setInput] = useState('');
+
+  const queryInput = useRef(null);
+
   console.log('Pai renderizou');
 
   useEffect(() => {
-    setTimeout(() => {
-      fetch('https://jsonplaceholder.typicode.com/posts')
-        .then((res) => res.json())
-        .then((json) => setPosts(json))
-        .catch((err) => console.log(err));
-    }, 5000);
+    fetch('https://jsonplaceholder.typicode.com/posts')
+      .then((res) => res.json())
+      .then((json) => setPosts(json))
+      .catch((err) => console.log(err));
   }, []);
+
+  useEffect(() => {
+    queryInput.current.focus();
+  }, [input]);
+
+  const handleClick = (value) => {
+    setInput(value);
+  };
 
   return (
     <div className="App">
-      <input type="search" value={input} onChange={(e) => setInput(e.target.value)} />
+      <input type="search" ref={queryInput} value={input} onChange={(e) => setInput(e.target.value)} />
       {posts.length === 0 && <p>Carregando seus posts...</p>}
 
       {useMemo(() => {
-        return posts.length > 0 && posts.map((post) => <Posts post={post} key={post.id} />);
+        return posts.length > 0 && posts.map((post) => <Posts action={handleClick} post={post} key={post.id} />);
       }, [posts])}
     </div>
   );
