@@ -1,40 +1,62 @@
 import './App.css';
-import { useReducer } from 'react';
+import P from 'prop-types';
+import { useReducer, createContext, useContext, useRef } from 'react';
 
-const globalState = {
+// data.js
+export const globalState = {
   title: 'O titulo do contexto',
   body: 'O corpo do contexto',
   counter: 0,
 };
 
-const reducer = (state, action) => {
-  if (action.type === 'muda') {
-    console.log('Chamou teste1');
-    return { ...state, title: 'Outro titulo ai' };
-  }
-
-  if (action.type === 'inverter') {
-    console.log('Chamou teste2');
-    const { title } = state;
-    return { ...state, title: title.split('').reverse().join('') };
+//reducer.js
+export const reducer = (state, action) => {
+  switch (action.type) {
+    case 'CHANGE_TITLE': {
+      return { ...state, title: action.payload };
+    }
   }
 
   return { ...state };
 };
 
-function App() {
+//AppContext.jsx
+export const Context = createContext();
+export const AppContext = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, globalState);
 
-  const { title, body, counter } = state;
+  const changeTitle = (payload) => {
+    dispatch({ type: 'CHANGE_TITLE', payload });
+  };
+
+  return <Context.Provider value={{ state, changeTitle }}>{children}</Context.Provider>;
+};
+
+AppContext.propTypes = {
+  children: P.node,
+};
+
+//Components/H1/index.jsx
+const H1 = () => {
+  const context = useContext(Context);
+  const inputRef = useRef();
 
   return (
-    <div className="App">
-      <h1>
-        {title} {counter}
-      </h1>
-      <button onClick={() => dispatch({ type: 'muda' })}>Mudar titulo</button>
-      <button onClick={() => dispatch({ type: 'inverter' })}>Inverter texto</button>
-    </div>
+    <>
+      <h1 onClick={() => context.changeTitle(inputRef.current.value)}>{context.state.title}</h1>
+      <input ref={inputRef} type="text" />
+    </>
+  );
+};
+
+// App.jsx
+function App() {
+  return (
+    <AppContext>
+      <div className="App">
+        <H1 />
+      </div>
+    </AppContext>
   );
 }
 
