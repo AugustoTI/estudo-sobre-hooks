@@ -12,9 +12,9 @@ export const Posts = () => {
       if (inMounted.current) {
         funcDisparadora();
       }
-
-      return () => (inMounted.current = false);
     });
+
+    return () => (inMounted.current = false);
   }, [postsDispacth]);
 
   return (

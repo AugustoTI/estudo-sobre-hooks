@@ -3,6 +3,7 @@
     "node_modules": true,
     "public": true,
     "yarn.lock": true,
-    "README.md": true
+    "README.md": true,
+    ".gitignore": true
   }
 }
