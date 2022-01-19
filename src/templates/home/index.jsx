@@ -1,62 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
-
-const useAysnc = (asyncFunction, shouldRun) => {
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [status, setStatus] = useState('idle');
-
-  const run = useCallback(() => {
-    setResult(null);
-    setError(null);
-    setStatus('pending');
-
-    return asyncFunction()
-      .then((res) => {
-        setStatus('settled');
-        setResult(res);
-      })
-      .catch((err) => {
-        setStatus('Error');
-        setError(err);
-      });
-  }, [asyncFunction]);
-
-  useEffect(() => {
-    if (shouldRun) {
-      run();
-    }
-  }, [run, shouldRun]);
-
-  return [run, result, error, status];
-};
-
-const dataFecth = async () => {
-  const posts = await fetch('https://jsonplaceholder.typicode.com/posts');
-  const postsJSON = await posts.json();
-
-  return postsJSON;
-};
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 function Home() {
-  const [reDataFecth, result, error, status] = useAysnc(dataFecth, true);
+  const [counted, setConted] = useState([1, 2, 3, 4, 5]);
 
-  if (status === 'idle') {
-    return <pre>Nada executando.</pre>;
-  }
+  const divRef = useRef();
 
-  if (status === 'pending') {
-    return <pre>Loading...</pre>;
-  }
+  const handleClick = () => {
+    setConted((prevC) => [...prevC, +prevC.slice(-1) + 1]);
+  };
 
-  if (status === 'error') {
-    return <pre>{JSON.stringify(error, null, 2)}</pre>;
-  }
+  useLayoutEffect(() => {
+    const now = Date.now();
+    while (Date.now() < now + 3000) divRef.current.scrollTop = divRef.current.scrollHeight;
+  });
 
-  if (status === 'settled') {
-    return <pre>{JSON.stringify(result, null, 2)}</pre>;
-  }
-
-  return 'Vish, deu muito ruim aqui...';
+  return (
+    <>
+      <button onClick={handleClick}>Contend {counted.slice(-1)}</button>
+      <div ref={divRef} style={{ width: '100px', height: '120px', overflowY: 'auto' }}>
+        {counted.map((num) => {
+          return <p key={`n-${num}`}>{num}</p>;
+        })}
+      </div>
+    </>
+  );
 }
 
 export default Home;
