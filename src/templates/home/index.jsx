@@ -1,27 +1,34 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useDebugValue, useEffect, useState } from 'react';
+
+const useMediaQuery = (mediaQuery) => {
+  const [macth, setMacth] = useState(false);
+
+  useDebugValue('Media query pra tela de 900px');
+
+  useEffect(() => {
+    const mediaMacth = window.matchMedia(mediaQuery);
+
+    const handleChange = () => {
+      setMacth(mediaMacth.matches);
+    };
+
+    mediaMacth.addEventListener('change', handleChange);
+
+    return () => {
+      mediaMacth.removeEventListener('change', handleChange);
+    };
+  }, [mediaQuery]);
+
+  return macth;
+};
 
 function Home() {
-  const [counted, setConted] = useState([1, 2, 3, 4, 5]);
-
-  const divRef = useRef();
-
-  const handleClick = () => {
-    setConted((prevC) => [...prevC, +prevC.slice(-1) + 1]);
-  };
-
-  useLayoutEffect(() => {
-    const now = Date.now();
-    while (Date.now() < now + 3000) divRef.current.scrollTop = divRef.current.scrollHeight;
-  });
+  const huge = useMediaQuery('(max-width:900px)');
+  const background = huge ? 'green' : null;
 
   return (
     <>
-      <button onClick={handleClick}>Contend {counted.slice(-1)}</button>
-      <div ref={divRef} style={{ width: '100px', height: '120px', overflowY: 'auto' }}>
-        {counted.map((num) => {
-          return <p key={`n-${num}`}>{num}</p>;
-        })}
-      </div>
+      <h1 style={{ background }}>Oi</h1>
     </>
   );
 }
