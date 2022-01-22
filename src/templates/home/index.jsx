@@ -1,34 +1,56 @@
-import { useDebugValue, useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 
-const useMediaQuery = (mediaQuery) => {
-  const [macth, setMacth] = useState(false);
+class MyErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  useDebugValue('Media query pra tela de 900px');
+  static getDerivedStateFromError(error) {
+    // Atualiza o state para que a próxima renderização mostre a UI alternativa.
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Você também pode registrar o erro em um serviço de relatórios de erro
+    console.log(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Você pode renderizar qualquer UI alternativa
+      return <h1>Algo deu errado.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+
+const ItWillThrowError = () => {
+  const [counter, setCounter] = useState(0);
+
+  const handleClick = () => setCounter((prevC) => prevC + 1);
 
   useEffect(() => {
-    const mediaMacth = window.matchMedia(mediaQuery);
+    if (counter > 3) throw new Error('Deu ruim mlk');
+  }, [counter]);
 
-    const handleChange = () => {
-      setMacth(mediaMacth.matches);
-    };
-
-    mediaMacth.addEventListener('change', handleChange);
-
-    return () => {
-      mediaMacth.removeEventListener('change', handleChange);
-    };
-  }, [mediaQuery]);
-
-  return macth;
+  const fontSize = '40px';
+  return (
+    <>
+      <button onClick={() => handleClick()} style={{ fontSize }}>
+        Click em mim {counter}
+      </button>
+    </>
+  );
 };
 
 function Home() {
-  const huge = useMediaQuery('(max-width:900px)');
-  const background = huge ? 'green' : null;
-
   return (
     <>
-      <h1 style={{ background }}>Oi</h1>
+      <MyErrorBoundary>
+        <ItWillThrowError />
+      </MyErrorBoundary>
     </>
   );
 }
