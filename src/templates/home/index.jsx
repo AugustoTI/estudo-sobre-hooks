@@ -1,56 +1,49 @@
-import { Component, useEffect, useState } from 'react';
+import { useState, Children, cloneElement } from 'react';
 
-class MyErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+const s = {
+  style: {
+    fontSize: '40px',
+  },
+};
 
-  static getDerivedStateFromError(error) {
-    // Atualiza o state para que a próxima renderização mostre a UI alternativa.
-    return { hasError: true };
-  }
+const TurnOnOff = ({ children }) => {
+  const [isOn, setIsOn] = useState(false);
 
-  componentDidCatch(error, errorInfo) {
-    // Você também pode registrar o erro em um serviço de relatórios de erro
-    console.log(error, errorInfo);
-  }
+  const onTurn = () => setIsOn((prevOn) => !prevOn);
 
-  render() {
-    if (this.state.hasError) {
-      // Você pode renderizar qualquer UI alternativa
-      return <h1>Algo deu errado.</h1>;
-    }
+  return Children.map(children, (child) => {
+    const newChild = cloneElement(child, {
+      isOn,
+      onTurn,
+    });
+    return newChild;
+  });
+};
 
-    return this.props.children;
-  }
-}
+const TurnedON = ({ isOn, children }) => (isOn ? children : null);
 
-const ItWillThrowError = () => {
-  const [counter, setCounter] = useState(0);
+const TurnedOFF = ({ isOn, children }) => (isOn ? null : children);
 
-  const handleClick = () => setCounter((prevC) => prevC + 1);
-
-  useEffect(() => {
-    if (counter > 3) throw new Error('Deu ruim mlk');
-  }, [counter]);
-
-  const fontSize = '40px';
+const TurnButton = ({ isOn, onTurn, ...props }) => {
   return (
-    <>
-      <button onClick={() => handleClick()} style={{ fontSize }}>
-        Click em mim {counter}
-      </button>
-    </>
+    <button {...props} onClick={onTurn}>
+      Turn {isOn ? 'OFF' : 'ON'}
+    </button>
   );
 };
 
 function Home() {
   return (
     <>
-      <MyErrorBoundary>
-        <ItWillThrowError />
-      </MyErrorBoundary>
+      <TurnOnOff>
+        <TurnedON>
+          As coisas que vão acontencer quando estiver ON <br />
+        </TurnedON>
+        <TurnedOFF>
+          Aqui vem as coisas do OFF <br />
+        </TurnedOFF>
+        <TurnButton {...s} />
+      </TurnOnOff>
     </>
   );
 }
