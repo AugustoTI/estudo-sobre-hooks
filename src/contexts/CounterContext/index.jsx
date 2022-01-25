@@ -1,4 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useReducer, useRef } from 'react';
+import { reducer } from './reducer';
+import { buildActions } from './build-actions';
 
 const Context = createContext();
 
@@ -8,9 +10,10 @@ export const initialState = {
 };
 
 export const CounterContextProvider = ({ children }) => {
-  const [state, dispath] = useState(initialState);
+  const [state, dispath] = useReducer(reducer, initialState);
+  const actions = useRef(buildActions(dispath));
 
-  return <Context.Provider value={[state, dispath]}>{children}</Context.Provider>;
+  return <Context.Provider value={[state, actions.current]}>{children}</Context.Provider>;
 };
 
 export const useCounterContent = () => {
